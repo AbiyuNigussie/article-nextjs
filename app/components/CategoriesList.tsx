@@ -1,13 +1,14 @@
 import { fetchFromWP } from '../lib/wp';
+import type { WPCategory } from '../lib/types';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic'; // SSR
 
 export default async function CategoriesList() {
-  const categories = await fetchFromWP('article-categories', { per_page: 20 });
+  const categories = (await fetchFromWP('article-categories', { per_page: 20 })) as WPCategory[];
   return (
     <nav className="flex flex-wrap gap-2 mb-2">
-      {categories.map((cat: any) => (
+      {categories.map((cat) => (
         <Link
           key={cat.id}
           href={`/category/${cat.id}`}

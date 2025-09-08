@@ -1,7 +1,10 @@
 // Utility to fetch data from WordPress REST API
 export const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'https://your-wordpress-site.com/wp-json/wp/v2';
 
-export async function fetchFromWP(endpoint: string, params: Record<string, any> = {}) {
+export async function fetchFromWP(
+  endpoint: string,
+  params: Record<string, string | number | boolean | undefined> = {}
+) {
   const url = new URL(`${WORDPRESS_API_URL}/${endpoint}`);
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, String(value));

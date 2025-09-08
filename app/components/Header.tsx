@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import CategoriesList from './CategoriesList';
 import SearchBox from './SearchBox';
+import { Suspense } from 'react';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,9 @@ export default async function Header() {
             {/* <Link href="/contact" className="hover:text-violet-300">Contact</Link> */}
           </nav>
           <div className="hidden sm:block">
-            <SearchBox />
+            <Suspense fallback={<div className="w-56 h-9 rounded-full border border-white/10 bg-white/5" />}> 
+              <SearchBox />
+            </Suspense>
           </div>
         </div>
         <div className="py-2">

@@ -1,12 +1,14 @@
 import { fetchFromWP } from '../../lib/wp';
+import type { WPArticle, WPCategory } from '../../lib/types';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const dynamic = 'force-dynamic'; // SSR
 
 export default async function CategoryPage({ params }: { params: Promise<{ categoryId: string }> }) {
   const { categoryId } = await params;
-  const posts = await fetchFromWP('articles', { "article-categories": categoryId, per_page: 10, _embed: 1, acf_format: 'standard', _fields: 'id,title,excerpt,acf' });
-  const category = await fetchFromWP(`article-categories/${categoryId}`);
+  const posts = (await fetchFromWP('articles', { "article-categories": categoryId, per_page: 10, _embed: 1, acf_format: 'standard', _fields: 'id,title,excerpt,acf' })) as WPArticle[];
+  const category = (await fetchFromWP(`article-categories/${categoryId}`)) as WPCategory;
   return (
     <section className="py-2">
       <h1 className="text-3xl font-semibold tracking-tight text-slate-100 mb-6">Category: {category.name}</h1>
@@ -14,13 +16,15 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         <p className="text-slate-400">No posts found in this category.</p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2">
-          {posts.map((post: any) => (
+          {posts.map((post) => (
             <article key={post.id} className="group overflow-hidden rounded-xl border border-white/10 bg-white/5 shadow-md transition hover:shadow-lg hover:shadow-violet-500/10">
               <Link href={`/posts/${post.id}`} className="block">
                 {post.acf?.featured_image && (
-                  <img
-                    src={post.acf?.featured_image}
+                  <Image
+                    src={post.acf.featured_image}
                     alt={post.title.rendered}
+                    width={800}
+                    height={400}
                     className="h-48 w-full object-cover"
                   />
                 )}

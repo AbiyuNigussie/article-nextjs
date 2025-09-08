@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Next.js + WordPress Headless Blog
 
-## Getting Started
+Production-ready blog built with Next.js (App Router) that consumes a WordPress headless API. It uses server-side rendering (SSR) for SEO, Tailwind CSS for styling, and is deployable on Vercel.
 
-First, run the development server:
+## Features
+- Server-side rendering for all main pages (SEO-friendly)
+- WordPress REST API integration (custom post type: `articles`, taxonomy: `article-categories`)
+- ACF fields support (e.g., `featured_image`, `author`, `content`)
+- Search with instant typing on the `/search` page and Enter-to-search from anywhere
+- Clean header with categories navigation
+- Tailwind CSS (v4) theme and modern, responsive UI
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Project structure (key files)
+- `app/page.tsx` — Home (latest articles)
+- `app/posts/[postId]/page.tsx` — Post detail
+- `app/category/[categoryId]/page.tsx` — Category listing
+- `app/search/page.tsx` — Search results (SSR from query `q`)
+- `app/components/Header.tsx` — Top nav + Search + Categories
+- `app/components/CategoriesList.tsx` — Category pills, fetched from WP
+- `app/components/SearchBox.tsx` — Client component for instant search
+- `app/lib/wp.ts` — WordPress fetch helper
+- `app/globals.css` — Global theme and content typography
+
+## Prerequisites
+- Node.js 18+ (recommended LTS)
+- A WordPress site with the REST API enabled, custom post type `articles`, taxonomy `article-categories`, and the needed ACF fields.
+
+## Configuration
+1) WordPress API base URL
+
+Create `.env.local` in the project root:
+
+```
+WORDPRESS_API_URL=https://your-wordpress-site.com/wp-json/wp/v2
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`app/lib/wp.ts` reads this env var and builds requests like `/articles`, `/article-categories`, etc.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2) Remote images (Next/Image)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+If your WordPress media is served from the same host as `WORDPRESS_API_URL` (even with a port), use `remotePatterns` in `next.config.ts`:
 
-## Learn More
+```ts
+const wp = process.env.WORDPRESS_API_URL ? new URL(process.env.WORDPRESS_API_URL) : undefined;
 
-To learn more about Next.js, take a look at the following resources:
+export default {
+	images: {
+		remotePatterns: wp
+			? [
+					{
+						protocol: (wp.protocol.replace(":", "")),
+						hostname: wp.hostname,
+						port: wp.port || undefined,
+						pathname: "/**",
+					},
+				]
+			: [],
+	},
+};
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If images are on a different host/CDN than the API base, add an additional `remotePatterns` entry for that host.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Development
 
-## Deploy on Vercel
+```bash
+npm install
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open http://localhost:3000.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data model used by pages
+- Home (`/`): GET `articles?per_page=10&_embed=1&acf_format=standard&_fields=id,title,acf`
+	- Displays title and ACF `featured_image`
+- Post detail (`/posts/[postId]`): GET `articles/:id?_embed=1&acf_format=standard&_fields=id,date,title,acf`
+	- Displays title, date, ACF `author.nickname`, and ACF `content`
+- Category (`/category/[categoryId]`): GET `articles?article-categories=:id&_embed=1&acf_format=standard&_fields=id,title,excerpt,acf`
+	- Card grid filtered by category
+- Search (`/search?q=term`): GET `articles?search=:term&_embed=1&acf_format=standard&_fields=id,title,acf,excerpt`
+	- Header search updates results as you type on `/search`; from other pages, press Enter to navigate
+
+You can switch to core posts/categories by changing endpoints to `posts`/`categories` and updating data fields accordingly.
+
+## Styling
+- Tailwind CSS v4 (see `app/globals.css`)
+- Theme, spacing, and readable content styles via `.content` class for WP HTML
+- Components use semantic Tailwind utilities and accessible focus/hover states
+
+## Deployment (Vercel)
+1) Push the repo to GitHub/GitLab/Bitbucket.
+2) Import the project in Vercel.
+3) Set Environment Variable:
+	 - `WORDPRESS_API_URL=https://your-wordpress-site.com/wp-json/wp/v2`
+4) Ensure `images.domains` in `next.config.ts` includes your WP domain.
+5) Deploy.
+
+## Notes & customization
+- Endpoints currently use `articles` and `article-categories`. If your WordPress uses different slugs, update the fetch calls accordingly.
+- ACF fields referenced: `acf.featured_image`, `acf.content`, `acf.author.nickname`. Adjust to your field names if different.
+- Caching: `fetchFromWP` uses `{ next: { revalidate: 0 } }` to force SSR on each request during dev. Tweak for production as needed.
+
+## License
+MIT

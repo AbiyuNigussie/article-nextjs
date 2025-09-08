@@ -1,6 +1,8 @@
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { fetchFromWP } from './lib/wp';
+import type { WPArticle } from './lib/types';
 
 export const dynamic = 'force-dynamic'; // SSR
 
@@ -10,13 +12,15 @@ export default async function HomePage() {
     <section aria-label="Latest articles" className="py-2">
       <h1 className="text-3xl font-semibold tracking-tight text-slate-100 mb-6">Latest Articles</h1>
       <div className="grid gap-6 sm:grid-cols-2">
-        {posts.map((post: any) => (
+        {(posts as WPArticle[]).map((post) => (
           <article key={post.id} className="group overflow-hidden rounded-xl border border-white/10 bg-white/5 shadow-md transition hover:shadow-lg hover:shadow-violet-500/10 focus-within:ring-2 focus-within:ring-violet-400/20">
             <Link href={`/posts/${post.id}`} className="block outline-none">
               {post.acf?.featured_image && (
-                <img
-                  src={post.acf?.featured_image}
+                <Image
+                  src={post.acf.featured_image}
                   alt={post.title.rendered}
+                  width={800}
+                  height={400}
                   className="h-48 w-full object-cover"
                 />
               )}
