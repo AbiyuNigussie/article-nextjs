@@ -1,6 +1,8 @@
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "./components/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,10 +26,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased text-slate-200 min-h-screen flex flex-col`}>
+        <Header />
+        <main className="flex-1 py-8 px-6">{children}</main>
+        <footer className="mt-10 border-t border-white/10 py-6 px-6 text-sm text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p>© {new Date().getFullYear()} My Blog. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <a className="hover:text-violet-300" href="https://nextjs.org" target="_blank" rel="noreferrer">Next.js</a>
+              <a className="hover:text-violet-300" href="https://vercel.com" target="_blank" rel="noreferrer">Vercel</a>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

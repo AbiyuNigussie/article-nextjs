@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    domains: ['your-wordpress-site.com'], // <-- replace with your WP domain
+  },
 };
 
 export default nextConfig;
